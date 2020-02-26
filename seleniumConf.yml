@@ -1,0 +1,3 @@
+selenium:
+  headless: False
+  chrome_version: 80
