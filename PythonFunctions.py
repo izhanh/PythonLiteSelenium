@@ -9,6 +9,8 @@ import spur
 import time
 import yaml
 import boto3
+import shutil
+import telegram
 import datetime
 import platform
 import requests
@@ -19,8 +21,9 @@ from selenium import webdriver
 from datetime import date, timedelta
 from selenium.webdriver.chrome.options import Options
 
-# LOCAL OS PARAMS
+# CONSTANTS
 
+# Local filesystem
 currentFolder = os.path.dirname(os.path.abspath(__file__))
 opSys = "mac" if "mac" in platform.platform().lower() else "linux"
 if "windows" in platform.platform().lower(): opSys = "windows"
@@ -31,6 +34,16 @@ seleniumConfFile = currentFolder + pathSep + "seleniumConf.yml"
 chromedriverPath = currentFolder + pathSep + "WebDrivers" + pathSep + "[VERSION]" + pathSep + opSys + "ChromeDriver"
 if "windows" in opSys: chromedriverPath = chromedriverPath + ".exe"
 screenshotsPath = currentFolder + pathSep + "Screenshots" + pathSep
+
+# Telegram Data
+teleUsers = {
+    "izhan": 458301696
+}
+TOKEN = "880799272:AAE4M8ElhBDEQ0NLhlXOb-ERCnOJtKx8iRU"
+BOT_URL = "https://api.telegram.org/bot" + TOKEN + "/"
+API_URL = "https://cry6smofud.execute-api.eu-west-1.amazonaws.com/ApiToBot"
+WEBHOOK_URL = BOT_URL + TOKEN + "setWebhook?url=" + API_URL
+bot = telegram.Bot(token = TOKEN)
 
 # Test function
 def main():
@@ -359,5 +372,63 @@ def closeDriverSession(driver):
 
 def getDriverVersion(driver):
     return driver.capabilities['version']
+
+# TELEGRAM BOT FUNCTIONS
+
+def sendMessageWithMenuToUrl(user, textToSend, optionsList, colNum):
+    buttonList = []
+    for option in optionsList:
+        if option[0] == "url":
+            buttonList.append(telegram.InlineKeyboardButton(option[1], url = option[2]))
+        elif option[0] == "switch":
+            buttonList.append(telegram.InlineKeyboardButton(option[1], switch_inline_query = option[2]))
+        elif option[0] == "switchInChat":
+            buttonList.append(telegram.InlineKeyboardButton(option[1], switch_inline_query_current_chat = option[2]))
+        else:
+            buttonList.append(telegram.InlineKeyboardButton(option[1], callback_data = option[2]))
+    
+    replyMarkup = telegram.InlineKeyboardMarkup(buildMenu(buttonList, n_cols = colNum))
+    bot.send_message(chat_id = teleUsers[user], text = textToSend, reply_markup = replyMarkup)
+
+def sendMessageWithCustomKeyboard(user, textToSend, keyboardOtions):
+    keyboardButtons = []
+    for option in keyboardOtions:
+        keyboardButtons.append([option])
+        
+    reply_markup = telegram.ReplyKeyboardMarkup(keyboardButtons)
+    bot.send_message(chat_id = teleUsers[user], 
+                     text = textToSend, 
+                     reply_markup = reply_markup)
+    
+def sendMessageToUser(user, textToSend):
+    bot.send_message(chat_id = teleUsers[user], text = textToSend)
+    
+def getAndPrintUpdates():
+    bot.deleteWebhook()
+    updates = bot.get_updates()
+    print([u.message.text for u in updates])
+    setAPIGatewayWebhook()
+    
+def setAPIGatewayWebhook():
+    getRequestAsJson(WEBHOOK_URL)
+    
+def buildMenu(buttons, n_cols, header_buttons = None, footer_buttons = None):
+    menu = [buttons[i:i + n_cols] for i in range(0, len(buttons), n_cols)]
+    if header_buttons:
+        menu.insert(0, [header_buttons])
+    if footer_buttons:
+        menu.append([footer_buttons])
+    return menu
+
+# GENERIC FUNCTIONS
+
+def getRequestAsJson(url):
+    payload = ""
+    headers = {
+        "cache-control": "no-cache"
+    }
+
+    response = requests.get(url, data = payload, headers = headers).text
+    return json.loads(response)
 
 #main()
