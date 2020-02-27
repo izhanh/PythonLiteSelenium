@@ -3,9 +3,19 @@
 
 ## Prerequisites
 
-* To execute this fwk is mandatory to have Python installed in the computer. Can be found here:
+* Python3:
 
 [https://www.python.org/downloads/](https://www.python.org/downloads/)
+
+* PythonPY:
+```
+    sudo apt/snap/yum install -y pythonpy
+```
+
+* Chromium:
+```
+    sudo apt/snap/yum install -y chromium
+```
 
 ## Installation
 

@@ -14,3 +14,4 @@ def exampleTest():
     driver = PythonFunctions.getChromeDriver()
     SampleHomePage.navigateToMainPage(driver)
     SampleHomePage.checkPage(driver)
+    PythonFunctions.saveScreenshot(driver, "exampleTest")

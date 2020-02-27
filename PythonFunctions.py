@@ -329,6 +329,8 @@ def getChromeDriverVersion(headlessMode, version):
         options.add_argument('--headless')
         options.add_argument('--no-sandbox')
         options.add_argument('--single-process')
+        options.add_argument('--disable-dev-shm-usage')
+        options.add_argument('--remote-debugging-port=9222')
     else:
         print("Browser in Standard mode")
     options.add_argument('--start-maximized')
@@ -348,7 +350,8 @@ def getDriverTitle(driver):
     return driver.title
 
 def saveScreenshot(driver, name):
-    driver.save_screenshot(screenshotsPath + name)
+    driver.save_screenshot(screenshotsPath + name + ".png")
+    print("Saved screenshot in: " + screenshotsPath + name + ".png")
 
 def closeDriverSession(driver):
     driver.close();
