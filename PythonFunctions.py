@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+# =================================================================================================================== #
+# IMPORTS
+# =================================================================================================================== #
+
 import os
 import re
 import ast
@@ -8,12 +12,14 @@ import json
 import spur
 import time
 import yaml
+import tqdm
 import boto3
 import shutil
 import telegram
 import datetime
 import platform
 import requests
+import mysql.connector
 import multiprocessing
 from pprint import pprint
 from termcolor import colored
@@ -21,7 +27,9 @@ from selenium import webdriver
 from datetime import date, timedelta
 from selenium.webdriver.chrome.options import Options
 
+# =================================================================================================================== #
 # CONSTANTS
+# =================================================================================================================== #
 
 # Local filesystem
 currentFolder = os.path.dirname(os.path.abspath(__file__))
@@ -45,7 +53,19 @@ API_URL = "https://cry6smofud.execute-api.eu-west-1.amazonaws.com/ApiToBot"
 WEBHOOK_URL = BOT_URL + TOKEN + "setWebhook?url=" + API_URL
 bot = telegram.Bot(token = TOKEN)
 
-# Test function
+# SQL Credentials
+sqlUser = "admin"
+sqlPass = "joderr11"
+sqlTable = "quizzes"
+sqlDb = "spanishQuizzes"
+sqlHost = "generalpurposedb.cghvyjno3qf7.eu-west-1.rds.amazonaws.com"
+
+# =================================================================================================================== #
+# FUNCTIONS
+# =================================================================================================================== #
+
+# TEST FUNCTION
+
 def main():
     driver = getChromeDriver()
     navigate(driver, "https://www.google.com")
@@ -420,15 +440,32 @@ def buildMenu(buttons, n_cols, header_buttons = None, footer_buttons = None):
         menu.append([footer_buttons])
     return menu
 
-# GENERIC FUNCTIONS
+# SQL FUNCTIONS
 
-def getRequestAsJson(url):
-    payload = ""
-    headers = {
-        "cache-control": "no-cache"
-    }
+def getDBConnection():
+    mydb = mysql.connector.connect(
+        host = sqlHost,
+        user = sqlUser,
+        passwd = sqlPass,
+        database = sqlDb
+    )
 
-    response = requests.get(url, data = payload, headers = headers).text
-    return json.loads(response)
+    return mydb
+
+def performQuery(sqlDB, query):
+    sqlDBCursor = sqlDB.cursor()
+    sqlDBCursor.execute(query)
+    sqlResult = sqlDBCursor.fetchall()
+
+    return sqlResult
+
+def performInsert(sqlDB, insertQuery, insertTuple):
+    sqlDBCursor = sqlDB.cursor()
+    sqlDBCursor.execute(insertQuery, insertTuple)
+    sqlDB.commit()
+
+# =================================================================================================================== #
+# RUN TEST FUNCTION
+# =================================================================================================================== #
 
 #main()

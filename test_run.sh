@@ -1,9 +1,8 @@
 #!/bin/bash
 
-echo ""
-echo "=================================================="
+echo $'\n'"=================================================="
 echo "SELENIUM TEST RUNNER"
-echo "=================================================="
+echo "=================================================="$'\n'
 
 if [[ $# -ne 3 ]]; then
 	echo "Wrong amount of paramenters. Usage: 'test_run.sh {test_file} {test_name} {headless: true/false}"
